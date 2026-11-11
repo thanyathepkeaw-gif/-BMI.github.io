@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- ══ Viewport: viewport-fit=cover คือหัวใจของ iPhone notch / Dynamic Island ══ -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+
+  <!-- ══ Primary Meta ══ -->
+  <title>BMI Calculator — คำนวณดัชนีมวลกาย</title>
+  <meta name="description" content="คำนวณค่าดัชนีมวลกาย (BMI) พร้อมคำแนะนำสุขภาพ รองรับมาตรฐานเอเชีย" />
+  <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#818cf8" media="(prefers-color-scheme: light)" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- ══ PWA Manifest (Android Chrome + iOS) ══ -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- ══ iOS Safari — Add to Home Screen ══ -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BMI Calc" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- ══ iOS Touch Icons (ใช้ SVG fallback เพราะยังไม่ได้ generate PNG) ══ -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+
+  <!-- ══ Open Graph (share preview on LINE, Facebook, etc.) ══ -->
+  <meta property="og:title"       content="BMI Calculator — คำนวณดัชนีมวลกาย" />
+  <meta property="og:description" content="คำนวณ BMI พร้อมแสดงผลแบบ Arc Gauge และคำแนะนำสุขภาพเฉพาะเพศ" />
+  <meta property="og:type"        content="website" />
+
+  <!-- ══ Prevent iOS auto-detect phone numbers / emails ══ -->
+  <meta name="format-detection" content="telephone=no, email=no, address=no" />
+
+  <!-- ══ Styles & Fonts ══ -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ═══════ Animated Background Orbs ═══════ -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- ═══════ Theme Toggle ═══════ -->
+  <button class="theme-toggle" id="themeToggle" aria-label="สลับโหมด Dark/Light">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+
+  <!-- ═══════ QR Button (fixed top-left) ═══════ -->
+  <button class="qr-fab" id="qrBtn" aria-label="แสดง QR Code เพื่อเปิดบนมือถือ" title="เปิดบนมือถือ">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <!-- QR icon -->
+      <rect x="3"  y="3"  width="7" height="7" rx="1"/><rect x="4"  y="4"  width="5" height="5" rx=".5" fill="currentColor" stroke="none"/>
+      <rect x="14" y="3"  width="7" height="7" rx="1"/><rect x="15" y="4"  width="5" height="5" rx=".5" fill="currentColor" stroke="none"/>
+      <rect x="3"  y="14" width="7" height="7" rx="1"/><rect x="4"  y="15" width="5" height="5" rx=".5" fill="currentColor" stroke="none"/>
+      <line x1="14" y1="14" x2="14" y2="14.01" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="17" y1="14" x2="17" y2="14.01" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="20" y1="14" x2="20" y2="14.01" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="14" y1="17" x2="14" y2="17.01" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="17" y1="17" x2="20" y2="17"    stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="20" y1="17" x2="20" y2="21"    stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="14" y1="20" x2="17" y2="20"    stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <!-- ═══════ QR Modal ═══════ -->
+  <div class="qr-modal-overlay" id="qrOverlay" role="dialog" aria-modal="true"
+       aria-labelledby="qrModalTitle" hidden>
+    <div class="qr-modal" id="qrModal">
+      <!-- Close -->
+      <button class="qr-close" id="qrClose" aria-label="ปิด QR Code">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <!-- Header -->
+      <div class="qr-header">
+        <div class="qr-header-icon" aria-hidden="true">📱</div>
+        <h2 class="qr-title" id="qrModalTitle">เปิดบนมือถือ</h2>
+        <p class="qr-subtitle">สแกน QR Code ด้วยกล้องโทรศัพท์</p>
+      </div>
+
+      <!-- QR Code canvas -->
+      <div class="qr-canvas-wrap">
+        <div class="qr-canvas-bg">
+          <div id="qrCodeCanvas"></div>
+        </div>
+        <p class="qr-url-text" id="qrUrlText"></p>
+      </div>
+
+      <!-- Device badges -->
+      <div class="qr-badges" aria-label="รองรับอุปกรณ์">
+        <span class="qr-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          iOS Safari
+        </span>
+        <span class="qr-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.523 15.341a9.5 9.5 0 0 1-5.023 1.408 9.5 9.5 0 0 1-5.023-1.408L3 17.25V21h18v-3.75l-3.477-1.909zM12 2C8.134 2 5 5.134 5 9c0 2.669 1.388 5.01 3.477 6.341L12 17l3.523-1.659A7.5 7.5 0 0 0 19 9c0-3.866-3.134-7-7-7z"/></svg>
+          Android Chrome
+        </span>
+        <span class="qr-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 2c1.99 0 3.804.73 5.207 1.934l-1.983 1.983A5.985 5.985 0 0 0 12 6a5.985 5.985 0 0 0-3.224.917L6.793 4.934A7.965 7.965 0 0 1 12 4zm0 16a7.965 7.965 0 0 1-5.207-1.934l1.983-1.983A5.985 5.985 0 0 0 12 18a5.985 5.985 0 0 0 3.224-.917l1.983 1.983A7.965 7.965 0 0 1 12 20z"/></svg>
+          LINE / อื่นๆ
+        </span>
+      </div>
+
+      <!-- Local file notice -->
+      <div id="qr-local-notice" role="alert">
+        ⚠️ เปิดจากไฟล์ local — มือถือสแกนไม่ได้<br/>
+        รัน <strong>node serve.js</strong> ในโฟลเดอร์ bmi-calculator<br/>
+        แล้วเปิดคอมใหม่ผ่าน <strong>http://192.168.0.243:5500</strong>
+      </div>
+
+      <!-- Copy URL button -->
+      <button class="qr-copy-btn" id="qrCopyBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        <span id="qrCopyLabel">คัดลอก URL</span>
+      </button>
+
+      <!-- Download QR button -->
+      <button class="qr-download-btn" id="qrDownloadBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        บันทึก QR Code
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ═══════ Main App ═══════ -->
+  <div class="page-wrap">
+    <div class="app-shell">
+
+      <!-- ── Header ── -->
+      <header class="app-header">
+        <div class="header-pill">BMI</div>
+        <h1 class="app-title">Body Mass Index</h1>
+        <p class="app-sub">วัดดัชนีมวลกายของคุณ</p>
+      </header>
+
+      <!-- ══════════════════════════════════
+           INPUT CARD
+      ══════════════════════════════════ -->
+      <div class="glass-card" id="inputCard">
+
+        <!-- Gender Switcher -->
+        <section class="section-block" aria-labelledby="lbl-gender">
+          <p class="field-label" id="lbl-gender">เพศ</p>
+          <div class="gender-switcher" role="radiogroup" aria-labelledby="lbl-gender">
+
+            <label class="g-card active" id="gcard-male" tabindex="0" role="radio" aria-checked="true">
+              <input type="radio" name="gender" value="male" checked hidden />
+              <div class="g-icon-wrap male">
+                <!-- Male SVG -->
+                <svg viewBox="0 0 48 48" fill="none" class="g-svg" aria-hidden="true">
+                  <circle cx="24" cy="16" r="10" stroke="currentColor" stroke-width="3"/>
+                  <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="34" y1="8" x2="42" y2="0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <polyline points="37,0 42,0 42,5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="g-label">ชาย</span>
+              <span class="g-check" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+              </span>
+            </label>
+
+            <label class="g-card" id="gcard-female" tabindex="0" role="radio" aria-checked="false">
+              <input type="radio" name="gender" value="female" hidden />
+              <div class="g-icon-wrap female">
+                <!-- Female SVG -->
+                <svg viewBox="0 0 48 48" fill="none" class="g-svg" aria-hidden="true">
+                  <circle cx="24" cy="16" r="10" stroke="currentColor" stroke-width="3"/>
+                  <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="24" y1="26" x2="24" y2="34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="20" y1="30" x2="28" y2="30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="g-label">หญิง</span>
+              <span class="g-check" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+              </span>
+            </label>
+
+          </div>
+        </section>
+
+        <!-- Weight -->
+        <section class="section-block" aria-labelledby="lbl-weight">
+          <div class="field-row">
+            <p class="field-label" id="lbl-weight">น้ำหนัก</p>
+            <span class="field-unit">กิโลกรัม (kg)</span>
+          </div>
+          <div class="stepper-row">
+            <button class="stepper-btn" data-target="weight" data-dir="-1" aria-label="ลดน้ำหนัก" type="button">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="4" y="9" width="12" height="2" rx="1"/></svg>
+            </button>
+            <div class="num-input-wrap" id="weight-box">
+              <input type="number" id="weight" class="num-input" placeholder="65" min="1" max="500" step="0.5" inputmode="decimal" aria-describedby="weight-err" autocomplete="off" />
+            </div>
+            <button class="stepper-btn" data-target="weight" data-dir="1" aria-label="เพิ่มน้ำหนัก" type="button">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 9V5a1 1 0 0 0-2 0v4H5a1 1 0 0 0 0 2h4v4a1 1 0 0 0 2 0v-4h4a1 1 0 0 0 0-2h-4z"/></svg>
+            </button>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="weightSlider" class="custom-range" min="30" max="200" step="0.5" value="65" aria-label="สไลเดอร์น้ำหนัก" />
+            <div class="range-labels">
+              <span>30</span><span>200 kg</span>
+            </div>
+          </div>
+          <p class="field-err" id="weight-err" role="alert"></p>
+        </section>
+
+        <!-- Height -->
+        <section class="section-block" aria-labelledby="lbl-height">
+          <div class="field-row">
+            <p class="field-label" id="lbl-height">ส่วนสูง</p>
+            <span class="field-unit">เซนติเมตร (cm)</span>
+          </div>
+          <div class="stepper-row">
+            <button class="stepper-btn" data-target="height" data-dir="-1" aria-label="ลดส่วนสูง" type="button">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="4" y="9" width="12" height="2" rx="1"/></svg>
+            </button>
+            <div class="num-input-wrap" id="height-box">
+              <input type="number" id="height" class="num-input" placeholder="170" min="50" max="300" step="0.5" inputmode="decimal" aria-describedby="height-err" autocomplete="off" />
+            </div>
+            <button class="stepper-btn" data-target="height" data-dir="1" aria-label="เพิ่มส่วนสูง" type="button">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 9V5a1 1 0 0 0-2 0v4H5a1 1 0 0 0 0 2h4v4a1 1 0 0 0 2 0v-4h4a1 1 0 0 0 0-2h-4z"/></svg>
+            </button>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="heightSlider" class="custom-range" min="100" max="250" step="0.5" value="170" aria-label="สไลเดอร์ส่วนสูง" />
+            <div class="range-labels">
+              <span>100</span><span>250 cm</span>
+            </div>
+          </div>
+          <p class="field-err" id="height-err" role="alert"></p>
+        </section>
+
+        <!-- Calculate Button -->
+        <button class="btn-calc" id="btnCalc" type="button">
+          <span class="btn-calc-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 19V6l12-3v13M9 9l12-3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            คำนวณ BMI
+          </span>
+          <div class="ripple-container" aria-hidden="true"></div>
+        </button>
+
+      </div><!-- /inputCard -->
+
+
+      <!-- ══════════════════════════════════
+           RESULT CARD
+      ══════════════════════════════════ -->
+      <div class="glass-card result-card is-hidden" id="resultCard" aria-live="polite" aria-atomic="true">
+
+        <!-- Arc Gauge -->
+        <div class="arc-gauge-wrap" aria-hidden="true">
+          <svg class="arc-svg" viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background track -->
+            <path class="arc-track" d="M 20 110 A 90 90 0 0 1 200 110" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <!-- Coloured zone fills -->
+            <path class="arc-zone zone-thin"   d="M 20 110 A 90 90 0 0 1 56 37"   stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path class="arc-zone zone-normal" d="M 56 37  A 90 90 0 0 1 110 20"  stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path class="arc-zone zone-over"   d="M 110 20 A 90 90 0 0 1 148 30"  stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path class="arc-zone zone-obese"  d="M 148 30 A 90 90 0 0 1 180 60"  stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path class="arc-zone zone-obese2" d="M 180 60 A 90 90 0 0 1 200 110" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <!-- Needle -->
+            <g id="arcNeedle" class="arc-needle" transform="rotate(0, 110, 110)">
+              <line x1="110" y1="110" x2="110" y2="30" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="110" cy="110" r="7"/>
+              <circle cx="110" cy="110" r="3" class="needle-center"/>
+            </g>
+            <!-- BMI Text inside arc -->
+            <text class="arc-bmi-num" id="arcBmiNum" x="110" y="88" text-anchor="middle" dominant-baseline="auto">--</text>
+            <text class="arc-bmi-lbl" x="110" y="104" text-anchor="middle" dominant-baseline="auto">BMI</text>
+          </svg>
+          <!-- Zone labels under arc -->
+          <div class="arc-zone-labels">
+            <span class="zone-lbl thin">ผอม</span>
+            <span class="zone-lbl normal">ปกติ</span>
+            <span class="zone-lbl over">เกิน</span>
+            <span class="zone-lbl obese">อ้วน</span>
+            <span class="zone-lbl obese2">อันตราย</span>
+          </div>
+        </div>
+
+        <!-- Category Badge -->
+        <div class="result-badge-row">
+          <div class="result-badge" id="resultBadge">
+            <span id="resultCategory">--</span>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-pill">
+            <p class="stat-label">น้ำหนัก</p>
+            <p class="stat-value" id="statWeight">-- <small>kg</small></p>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-pill">
+            <p class="stat-label">ส่วนสูง</p>
+            <p class="stat-value" id="statHeight">-- <small>cm</small></p>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-pill">
+            <p class="stat-label">ค่า BMI</p>
+            <p class="stat-value" id="statBmi">--</p>
+          </div>
+        </div>
+
+        <!-- Advice -->
+        <div class="advice-card" id="adviceCard">
+          <div class="advice-icon" id="adviceIcon" aria-hidden="true">💡</div>
+          <p class="advice-text" id="adviceText">--</p>
+        </div>
+
+        <!-- Ideal Weight Range -->
+        <div class="ideal-row" id="idealRow">
+          <p class="ideal-label">น้ำหนักในเกณฑ์ที่เหมาะสม</p>
+          <p class="ideal-range" id="idealRange">-- kg</p>
+        </div>
+
+        <!-- Reset Button -->
+        <button class="btn-reset" id="btnReset" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+          คำนวณใหม่
+        </button>
+
+      </div><!-- /resultCard -->
+
+
+      <!-- ══════════════════════════════════
+           REFERENCE ACCORDION
+      ══════════════════════════════════ -->
+      <details class="ref-glass" id="refDetails">
+        <summary class="ref-summary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+          เกณฑ์ BMI มาตรฐานเอเชีย
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="ref-body">
+          <div class="ref-row ref-header-row">
+            <span>ค่า BMI</span><span>ระดับ</span><span>ความเสี่ยง</span>
+          </div>
+          <div class="ref-row thin-row">
+            <span class="ref-val">&lt; 18.5</span>
+            <span>น้ำหนักน้อย / ผอม</span>
+            <span class="risk-tag risk-high">สูง</span>
+          </div>
+          <div class="ref-row normal-row">
+            <span class="ref-val">18.5 – 22.9</span>
+            <span>ปกติ / สุขภาพดี</span>
+            <span class="risk-tag risk-low">ต่ำ</span>
+          </div>
+          <div class="ref-row over-row">
+            <span class="ref-val">23.0 – 24.9</span>
+            <span>ท้วม / น้ำหนักเกิน</span>
+            <span class="risk-tag risk-med">ปานกลาง</span>
+          </div>
+          <div class="ref-row obese-row">
+            <span class="ref-val">25.0 – 29.9</span>
+            <span>อ้วน</span>
+            <span class="risk-tag risk-high">สูง</span>
+          </div>
+          <div class="ref-row obese2-row">
+            <span class="ref-val">≥ 30.0</span>
+            <span>อ้วนมาก / อันตราย</span>
+            <span class="risk-tag risk-vhigh">สูงมาก</span>
+          </div>
+        </div>
+      </details>
+
+      <footer class="app-footer">
+        <p>⚕️ ข้อมูลนี้เป็นการประเมินเบื้องต้น ควรปรึกษาแพทย์เพื่อการวินิจฉัยที่ถูกต้อง</p>
+      </footer>
+
+    </div><!-- /app-shell -->
+  </div><!-- /page-wrap -->
+
+  <!-- ══ QRCode.js — Pure JS QR generator, no dependencies ══ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="js/bmi.js"></script>
+  <script src="js/qr.js"></script>
+
+  <!-- ══ Register Service Worker (PWA offline support) ══ -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .catch(() => { /* SW optional — fail silently */ });
+      });
+    }
+  </script>
+</body>
+</html>
