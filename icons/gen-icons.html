@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Generate Icons</title></head>
+<body style="font-family:sans-serif;padding:20px">
+<h2>BMI App Icon Generator</h2>
+<canvas id="c192" width="192" height="192" style="border:1px solid #ccc;margin:8px"></canvas>
+<canvas id="c512" width="512" height="512" style="border:1px solid #ccc;margin:8px"></canvas>
+<br>
+<button onclick="generate()" style="padding:10px 24px;font-size:16px;cursor:pointer;margin-top:12px">Generate &amp; Download Icons</button>
+<p id="status"></p>
+<script>
+function drawIcon(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const r = s * 0.215;
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, s, s);
+  grad.addColorStop(0, '#818cf8');
+  grad.addColorStop(1, '#a78bfa');
+
+  // Rounded rect
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s - r, 0);
+  ctx.quadraticCurveTo(s, 0, s, r);
+  ctx.lineTo(s, s - r);
+  ctx.quadraticCurveTo(s, s, s - r, s);
+  ctx.lineTo(r, s);
+  ctx.quadraticCurveTo(0, s, 0, s - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Scale dish (ellipse top)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = s * 0.044;
+  ctx.beginPath();
+  ctx.ellipse(s/2, s*0.35, s*0.254, s*0.054, 0, 0, Math.PI*2);
+  ctx.stroke();
+
+  // Scale body arc
+  ctx.beginPath();
+  ctx.moveTo(s*0.246, s*0.35);
+  ctx.bezierCurveTo(s*0.18, s*0.66, s*0.35, s*0.72, s/2, s*0.72);
+  ctx.bezierCurveTo(s*0.65, s*0.72, s*0.82, s*0.66, s*0.754, s*0.35);
+  ctx.stroke();
+
+  // Center stem
+  ctx.lineWidth = s * 0.035;
+  ctx.beginPath();
+  ctx.moveTo(s/2, s*0.296);
+  ctx.lineTo(s/2, s*0.406);
+  ctx.stroke();
+
+  // Tick lines
+  ctx.lineWidth = s * 0.027;
+  [[0.363, 0.51], [0.363, 0.585], [0.363, 0.655]].forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.moveTo(s*x, s*y);
+    ctx.lineTo(s*(x+0.078), s*y);
+    ctx.stroke();
+  });
+
+  // BMI label
+  ctx.restore();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `900 ${s*0.165}px Inter,Arial,sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('BMI', s/2, s*0.855);
+}
+
+function generate() {
+  const status = document.getElementById('status');
+  ['192','512'].forEach(size => {
+    const c = document.getElementById('c'+size);
+    drawIcon(c);
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/png');
+    a.download = `icon-${size}.png`;
+    a.click();
+  });
+  status.textContent = '✅ ดาวน์โหลด icon-192.png และ icon-512.png แล้ว — วางไว้ในโฟลเดอร์ icons/';
+}
+
+// Preview on load
+window.onload = () => {
+  drawIcon(document.getElementById('c192'));
+  drawIcon(document.getElementById('c512'));
+};
+</script>
+</body>
+</html>
