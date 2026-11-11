@@ -22,12 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="BMI Calc" />
   <meta name="mobile-web-app-capable" content="yes" />
 
-  <!-- ══ iOS Touch Icons (ใช้ SVG fallback เพราะยังไม่ได้ generate PNG) ══ -->
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
+  <!-- ══ iOS Touch Icons ══ -->
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
 
   <!-- ══ Open Graph (share preview on LINE, Facebook, etc.) ══ -->
   <meta property="og:title"       content="BMI Calculator — คำนวณดัชนีมวลกาย" />
@@ -38,6 +35,33 @@
   <meta name="format-detection" content="telephone=no, email=no, address=no" />
 
   <!-- ══ Styles & Fonts ══ -->
+  <!-- Critical inline CSS: ป้องกัน flash ก่อน stylesheet โหลด -->
+  <style>
+    /* ── Instant dark background ── */
+    html, body {
+      margin: 0; padding: 0;
+      background: #0f0c29;
+      color: #f1f5f9;
+      font-family: 'Sarabun', 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+    [data-theme="light"] body { background: #c7cfe8; color: #1a1d3a; }
+
+    /* ── Lock SVG size before CSS loads ── */
+    svg { max-width: 100%; }
+    .g-svg { width: 28px !important; height: 28px !important; display: block; }
+    .g-check svg { width: 11px !important; height: 11px !important; }
+    .arc-svg { width: 100%; max-width: 260px; }
+    .theme-toggle svg, .qr-fab svg { width: 20px; height: 20px; }
+
+    /* ── Hide result card before JS runs ── */
+    .is-hidden { display: none !important; }
+
+    /* ── Basic layout so page doesn't flash white ── */
+    .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .page-wrap { position: relative; z-index: 1; min-height: 100vh; }
+  </style>
+
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -168,7 +192,7 @@
               <input type="radio" name="gender" value="male" checked hidden />
               <div class="g-icon-wrap male">
                 <!-- Male SVG -->
-                <svg viewBox="0 0 48 48" fill="none" class="g-svg" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none" class="g-svg" width="28" height="28" aria-hidden="true">
                   <circle cx="24" cy="16" r="10" stroke="currentColor" stroke-width="3"/>
                   <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
                   <line x1="34" y1="8" x2="42" y2="0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
@@ -177,7 +201,7 @@
               </div>
               <span class="g-label">ชาย</span>
               <span class="g-check" aria-hidden="true">
-                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+                <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
               </span>
             </label>
 
@@ -185,7 +209,7 @@
               <input type="radio" name="gender" value="female" hidden />
               <div class="g-icon-wrap female">
                 <!-- Female SVG -->
-                <svg viewBox="0 0 48 48" fill="none" class="g-svg" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none" class="g-svg" width="28" height="28" aria-hidden="true">
                   <circle cx="24" cy="16" r="10" stroke="currentColor" stroke-width="3"/>
                   <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
                   <line x1="24" y1="26" x2="24" y2="34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
@@ -194,7 +218,7 @@
               </div>
               <span class="g-label">หญิง</span>
               <span class="g-check" aria-hidden="true">
-                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+                <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
               </span>
             </label>
 

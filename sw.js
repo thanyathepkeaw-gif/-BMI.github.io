@@ -9,8 +9,9 @@ const ASSETS = [
   './index.html',
   './css/style.css',
   './js/bmi.js',
+  './js/qr.js',
   './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600;700;800&display=swap'
+  './icons/icon.svg'
 ];
 
 /* Install — pre-cache all assets */
